@@ -1,0 +1,83 @@
+﻿Shader "Custom/GPUAnimation"
+{
+    Properties
+    {
+        _Color ("Color", Color) = (1,1,1,1)
+        _MainTex ("Albedo (RGB)", 2D) = "white" {}
+
+        _PosTex("Position Tex", 2D) = "white" {}
+        _CurFrameIndex("current frame index", Float) = 0
+        _BoundMin("bound min", Float) = 0
+        _BoundMax("bound max", Float) = 0
+    }
+    SubShader
+    {
+        Pass
+        {
+            Name "GPU Animation"
+
+            Tags { "RenderType" = "Opaque" }
+
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma target 3.0
+            #pragma multi_compile_instancing
+
+            #include "UnityCG.cginc"
+
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float4 texcoord : TEXCOORD0;
+                float2 uv3 : TEXCOORD2;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            struct v2f
+            {
+                float4 pos : SV_POSITION;
+                float2 uv : TEXCOORD0;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            sampler2D _PosTex;
+            float4 _PosTex_TexelSize;
+            float4 _Color;
+
+            UNITY_INSTANCING_BUFFER_START(Props)
+                UNITY_DEFINE_INSTANCED_PROP(float, _CurFrameIndex)
+                UNITY_DEFINE_INSTANCED_PROP(float, _BoundMin)
+                UNITY_DEFINE_INSTANCED_PROP(float, _BoundMax)
+            UNITY_INSTANCING_BUFFER_END(Props)
+
+            void vert(appdata v, out v2f o)
+            {
+                UNITY_SETUP_INSTANCE_ID(v);
+                UNITY_TRANSFER_INSTANCE_ID(v, o);
+                float x = (v.uv3.x + 0.5) * _PosTex_TexelSize.x;
+                float y = UNITY_ACCESS_INSTANCED_PROP(_CurFrameIndex_arr, _CurFrameIndex);
+                float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
+                float boundMin = UNITY_ACCESS_INSTANCED_PROP(_BoundMin_arr, _BoundMin);
+                float expand = UNITY_ACCESS_INSTANCED_PROP(_BoundMax_arr, _BoundMax) - boundMin;
+                pos.xyz *= expand;
+                pos.xyz += boundMin;
+                v.vertex = pos;
+
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv.xy = TRANSFORM_TEX(v.texcoord, _MainTex);
+            }
+
+            float4 frag(v2f i) : SV_Target
+            {
+                //float4 color = tex2D(_MainTex, i.uv.xy) * _Color;
+                float4 color = float4(0, 0, 0, 1);
+                return color;
+            }
+            ENDCG
+        }
+    }
+    FallBack "Diffuse"
+}
