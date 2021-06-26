@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using Unity.EditorCoroutines.Editor;
 
 public class GenGPUVertexAnimaton
 {
@@ -16,10 +17,10 @@ public class GenGPUVertexAnimaton
             return;
         }
 
-        GenThings(selector);
+        EditorCoroutineUtility.StartCoroutineOwnerless(GenThings(selector));
     }
 
-    public static void GenThings(Object selector)
+    static IEnumerator GenThings(Object selector)
     {
         var path = AssetDatabase.GetAssetPath(selector);
         var dir = "Assets/Prefab";
@@ -30,7 +31,7 @@ public class GenGPUVertexAnimaton
         {
             GameObject.DestroyImmediate(originPrefab);
             Debug.LogError("selection prefab does not have Animator component!");
-            return;
+            yield break;
         }
 
         
@@ -71,7 +72,7 @@ public class GenGPUVertexAnimaton
         }
 
         var defaultState = stateMachine.defaultState;
-        Texture2D posTex = new Texture2D(texWidth, totalFrame, TextureFormat.RGB24, false);
+        Texture2D posTex = new Texture2D(texWidth, totalFrame, TextureFormat.RGBAHalf, false);
         posTex.wrapMode = TextureWrapMode.Clamp;
         posTex.filterMode = FilterMode.Point;
         animator.speed = 0;  //因为靠代码手动Update，所以speed设置为0.
@@ -91,6 +92,7 @@ public class GenGPUVertexAnimaton
                 List<Color> pos = new List<Color>();
                 animator.Play(state.name, 0, (float)j / thisClipFrames);
                 animator.Update(Time.deltaTime);
+                yield return null;
                 skin.BakeMesh(modelMesh);
 
                 for (int z = 0; z < modelMesh.vertexCount; z++)
@@ -135,6 +137,7 @@ public class GenGPUVertexAnimaton
 
         posTex.Apply();
         AssetDatabase.CreateAsset(posTex, Path.Combine(subFolder,  string.Format("{0}_pos.asset", originPrefab.name)));  //保存位置纹理
+        File.WriteAllBytes(Path.Combine(subFolder, string.Format("{0}_pos.png", originPrefab.name)), posTex.EncodeToPNG());
 
         Shader shader = Shader.Find("Custom/GPUAnimation");
         Material mat = new Material(shader);
@@ -143,10 +146,11 @@ public class GenGPUVertexAnimaton
             if(animInfos[i].isDefault)
             {
                 mat.SetFloat("_BoundMax", animInfos[i].m_boundMax);
-                mat.SetFloat("_BoundMaxin", animInfos[i].m_boundMin);
+                mat.SetFloat("_BoundMin", animInfos[i].m_boundMin);
                 mat.SetTexture("_PosTex", posTex);
             }
         }
+        mat.enableInstancing = true;
         AssetDatabase.CreateAsset(mat, Path.Combine(subFolder, string.Format("{0}_mat.mat", originPrefab.name)));  //保存材质
 
 

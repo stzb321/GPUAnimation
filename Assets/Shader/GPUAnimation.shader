@@ -38,7 +38,6 @@
             {
                 float4 pos : SV_POSITION;
                 float2 uv : TEXCOORD0;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             sampler2D _MainTex;
@@ -53,27 +52,31 @@
                 UNITY_DEFINE_INSTANCED_PROP(float, _BoundMax)
             UNITY_INSTANCING_BUFFER_END(Props)
 
-            void vert(appdata v, out v2f o)
+            v2f vert(appdata v)
             {
+                v2f o;
+
                 UNITY_SETUP_INSTANCE_ID(v);
-                UNITY_TRANSFER_INSTANCE_ID(v, o);
                 float x = (v.uv3.x + 0.5) * _PosTex_TexelSize.x;
-                float y = UNITY_ACCESS_INSTANCED_PROP(_CurFrameIndex_arr, _CurFrameIndex);
+                float y = UNITY_ACCESS_INSTANCED_PROP(Props, _CurFrameIndex);
                 float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
-                float boundMin = UNITY_ACCESS_INSTANCED_PROP(_BoundMin_arr, _BoundMin);
-                float expand = UNITY_ACCESS_INSTANCED_PROP(_BoundMax_arr, _BoundMax) - boundMin;
+                float boundMin = UNITY_ACCESS_INSTANCED_PROP(Props, _BoundMin);
+                float expand = UNITY_ACCESS_INSTANCED_PROP(Props, _BoundMax) - boundMin;
                 pos.xyz *= expand;
                 pos.xyz += boundMin;
-                v.vertex = pos;
+                v.vertex += pos;
 
                 o.pos = UnityObjectToClipPos(v.vertex);
                 o.uv.xy = TRANSFORM_TEX(v.texcoord, _MainTex);
+
+                return o;
             }
 
             float4 frag(v2f i) : SV_Target
             {
-                //float4 color = tex2D(_MainTex, i.uv.xy) * _Color;
-                float4 color = float4(0, 0, 0, 1);
+                float4 color = tex2D(_MainTex, i.uv.xy) * _Color;
+
+                //float4 color = float4(1.0f, 1.0f, 1.0f, 1.0f);
                 return color;
             }
             ENDCG
