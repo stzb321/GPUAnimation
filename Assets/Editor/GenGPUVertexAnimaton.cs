@@ -71,6 +71,7 @@ public class GenGPUVertexAnimaton
             totalFrame += (int)(clip.length / SampleFactor) + 1;
         }
 
+        var mesh = new Mesh();
         var defaultState = stateMachine.defaultState;
         Texture2D posTex = new Texture2D(texWidth, totalFrame, TextureFormat.RGBAHalf, false);
         posTex.wrapMode = TextureWrapMode.Clamp;
@@ -93,11 +94,11 @@ public class GenGPUVertexAnimaton
                 animator.Play(state.name, 0, (float)j / thisClipFrames);
                 animator.Update(Time.deltaTime);
                 yield return null;
-                skin.BakeMesh(modelMesh);
+                skin.BakeMesh(mesh);
 
-                for (int z = 0; z < modelMesh.vertexCount; z++)
+                for (int z = 0; z < mesh.vertexCount; z++)
                 {
-                    Vector3 vertex = modelMesh.vertices[z];
+                    Vector3 vertex = mesh.vertices[z];
                     Color col = new Color(vertex.x, vertex.y, vertex.z);
                     pos.Add(col);
                     boundMin = Mathf.Min(boundMin, vertex.x, vertex.y, vertex.z);

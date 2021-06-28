@@ -19,6 +19,7 @@
             Tags { "RenderType" = "Opaque" }
 
             CGPROGRAM
+            #pragma enable_d3d11_debug_symbols
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 3.0
@@ -64,7 +65,7 @@
                 float expand = UNITY_ACCESS_INSTANCED_PROP(Props, _BoundMax) - boundMin;
                 pos.xyz *= expand;
                 pos.xyz += boundMin;
-                v.vertex += pos;
+                v.vertex = pos;
 
                 o.pos = UnityObjectToClipPos(v.vertex);
                 o.uv.xy = TRANSFORM_TEX(v.texcoord, _MainTex);
