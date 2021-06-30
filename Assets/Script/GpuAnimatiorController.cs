@@ -2,20 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GpuAnimatiorController : MonoBehaviour
+public class GPUAnimatiorController : MonoBehaviour
 {
     public AnimInfo[] animInfos;
     public float speed = 1.0f;
 
+    MaterialPropertyBlock materialPropertyBlock;
+    MeshRenderer meshRenderer;
     AnimInfo _curAnimInfo;
     Dictionary<string, AnimInfo> animInfoDict;
-    Material mat;
     float _playTime = 0;
 
     // Start is called before the first frame update
     void Start()
     {
-        mat = GetComponent<MeshRenderer>().sharedMaterial;
+        meshRenderer = GetComponent<MeshRenderer>();
+        materialPropertyBlock = new MaterialPropertyBlock();
+        meshRenderer.GetPropertyBlock(materialPropertyBlock);
+        SetDefaultAnimInfo();
     }
 
     // Update is called once per frame
@@ -26,7 +30,8 @@ public class GpuAnimatiorController : MonoBehaviour
         float curFrameIndex = (index / _curAnimInfo.totalFrames);
         _playTime += (Time.deltaTime * speed);
 
-        mat.SetFloat("_CurFrameIndex", curFrameIndex);
+        materialPropertyBlock.SetFloat("_CurFrameIndex", curFrameIndex);
+        meshRenderer.SetPropertyBlock(materialPropertyBlock);
     }
 
     public void Play(string animName)
@@ -43,8 +48,9 @@ public class GpuAnimatiorController : MonoBehaviour
         }
 
         _curAnimInfo = animInfo;
-        mat.SetFloat("_BoundMax", animInfo.m_boundMax);
-        mat.SetFloat("_BoundMin", animInfo.m_boundMin);
+        materialPropertyBlock.SetFloat("_BoundMax", animInfo.m_boundMax);
+        materialPropertyBlock.SetFloat("_BoundMin", animInfo.m_boundMin);
+        meshRenderer.SetPropertyBlock(materialPropertyBlock);
         _playTime = 0;
     }
 
@@ -62,5 +68,17 @@ public class GpuAnimatiorController : MonoBehaviour
         AnimInfo animInfo = null;
         animInfoDict.TryGetValue(animName, out animInfo);
         return animInfo;
+    }
+
+    void SetDefaultAnimInfo()
+    {
+        for (int i = 0; i < animInfos.Length; i++)
+        {
+            if(animInfos[i].isDefault)
+            {
+                _curAnimInfo = animInfos[i];
+                break;
+            }
+        }
     }
 }

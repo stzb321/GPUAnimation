@@ -163,6 +163,9 @@ public class GenGPUVertexAnimaton
         model.transform.localEulerAngles = Vector3.zero;
         model.AddComponent<MeshFilter>().sharedMesh = modelMesh;
         model.AddComponent<MeshRenderer>().sharedMaterial = mat;
+        GPUAnimatiorController controller = model.AddComponent<GPUAnimatiorController>();
+        controller.animInfos = animInfos.ToArray();
+
         PrefabUtility.SaveAsPrefabAsset(newPrefab, Path.Combine(subFolder, string.Format("{0}_prefab.prefab", originPrefab.name)));
 
         GameObject.DestroyImmediate(originPrefab);
