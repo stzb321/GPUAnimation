@@ -18,7 +18,7 @@ public class GPUAnimatiorController : MonoBehaviour
     {
         meshRenderer = GetComponent<MeshRenderer>();
         materialPropertyBlock = new MaterialPropertyBlock();
-        meshRenderer.GetPropertyBlock(materialPropertyBlock);
+        meshRenderer.GetPropertyBlock(materialPropertyBlock, 0);
         SetDefaultAnimInfo();
     }
 
@@ -31,7 +31,7 @@ public class GPUAnimatiorController : MonoBehaviour
         _playTime += (Time.deltaTime * speed);
 
         materialPropertyBlock.SetFloat("_CurFrameIndex", curFrameIndex);
-        meshRenderer.SetPropertyBlock(materialPropertyBlock);
+        meshRenderer.SetPropertyBlock(materialPropertyBlock, 0);
     }
 
     public void Play(string animName)
@@ -50,7 +50,7 @@ public class GPUAnimatiorController : MonoBehaviour
         _curAnimInfo = animInfo;
         materialPropertyBlock.SetFloat("_BoundMax", animInfo.m_boundMax);
         materialPropertyBlock.SetFloat("_BoundMin", animInfo.m_boundMin);
-        meshRenderer.SetPropertyBlock(materialPropertyBlock);
+        meshRenderer.SetPropertyBlock(materialPropertyBlock, 0);
         _playTime = 0;
     }
 

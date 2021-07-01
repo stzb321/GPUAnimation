@@ -75,10 +75,7 @@
 
             float4 frag(v2f i) : SV_Target
             {
-                float4 color = tex2D(_MainTex, i.uv.xy) * _Color;
-
-                //float4 color = float4(1.0f, 1.0f, 1.0f, 1.0f);
-                return color;
+                return tex2D(_MainTex, i.uv.xy) * _Color;
             }
             ENDCG
         }

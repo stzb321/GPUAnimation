@@ -77,8 +77,8 @@ public class GenGPUVertexAnimaton
         posTex.wrapMode = TextureWrapMode.Clamp;
         posTex.filterMode = FilterMode.Point;
         animator.speed = 0;  //因为靠代码手动Update，所以speed设置为0.
-        float boundMin = 0;
-        float boundMax = 0;
+        float boundMin = float.MaxValue;
+        float boundMax = float.MinValue;
         int frameOffset = 0;
         List<AnimInfo> animInfos = new List<AnimInfo>();
         List<List<Color>> pixels = new List<List<Color>>();
@@ -142,17 +142,24 @@ public class GenGPUVertexAnimaton
 
         Shader shader = Shader.Find("Custom/GPUAnimation");
         Material mat = new Material(shader);
+        mat.CopyPropertiesFromMaterial(skin.sharedMaterial);
+        var mat_path = Path.Combine(subFolder,  string.Format("{0}_mat.mat", originPrefab.name));
+        AssetDatabase.CreateAsset(mat, mat_path);  //保存材质
+
+        Material tempMat = AssetDatabase.LoadAssetAtPath(mat_path, typeof(Material)) as Material;
         for (int i = 0; i < animInfos.Count; i++)
         {
             if(animInfos[i].isDefault)
             {
-                mat.SetFloat("_BoundMax", animInfos[i].m_boundMax);
-                mat.SetFloat("_BoundMin", animInfos[i].m_boundMin);
-                mat.SetTexture("_PosTex", posTex);
+                tempMat.SetFloat("_BoundMax", animInfos[i].m_boundMax);
+                tempMat.SetFloat("_BoundMin", animInfos[i].m_boundMin);
+                tempMat.SetTexture("_PosTex", posTex);
+                break;
             }
         }
-        mat.enableInstancing = true;
-        AssetDatabase.CreateAsset(mat, Path.Combine(subFolder, string.Format("{0}_mat.mat", originPrefab.name)));  //保存材质
+        tempMat.enableInstancing = true;
+        AssetDatabase.SaveAssets();
+
 
 
         GameObject newPrefab = new GameObject(originPrefab.name);
