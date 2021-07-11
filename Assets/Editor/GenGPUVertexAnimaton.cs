@@ -105,10 +105,15 @@ public class GenGPUVertexAnimaton
                     boundMax = Mathf.Max(boundMax, vertex.x, vertex.y, vertex.z);
                 }
                 pixels.Add(pos);
+                if (j == 1 || j == thisClipFrames - 1)
+                {
+                    //在第一帧和最后帧分别插入一行，防止动画切换时采样错误
+                    pixels.Add(pos);
+                }
             }
 
             AnimInfo info = new AnimInfo();
-            info.animFrameOffset = frameOffset;
+            info.animFrameOffset = frameOffset+1;
             info.totalFrames = totalFrame;
             info.animFrameNum = thisClipFrames;
             info.m_boundMax = boundMax;

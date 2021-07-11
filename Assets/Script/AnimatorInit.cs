@@ -9,8 +9,8 @@ public class AnimatorInit : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        int row = 10;
-        int col = 10;
+        int row = 20;
+        int col = 20;
         for (int i = -row / 2; i < row / 2; i++)
         {
             for (int j = -col / 2; j < col / 2; j++)
